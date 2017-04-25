@@ -1394,6 +1394,10 @@ NEWLINE ("\r"|"\n"|"\r\n")
 	RETURN_TOKEN(T_USE);
 }
 
+<ST_IN_SCRIPTING>"usedby" {
+	RETURN_TOKEN(T_USEDBY);
+}
+
 <ST_IN_SCRIPTING>"insteadof" {
     RETURN_TOKEN(T_INSTEADOF);
 }

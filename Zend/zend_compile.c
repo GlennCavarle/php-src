@@ -2423,7 +2423,7 @@ static inline zend_bool zend_is_unticked_stmt(zend_ast *ast) /* {{{ */
 {
 	return ast->kind == ZEND_AST_STMT_LIST || ast->kind == ZEND_AST_LABEL
 		|| ast->kind == ZEND_AST_PROP_DECL || ast->kind == ZEND_AST_CLASS_CONST_DECL
-		|| ast->kind == ZEND_AST_USE_TRAIT || ast->kind == ZEND_AST_METHOD;
+		|| ast->kind == ZEND_AST_USE_TRAIT || ast->kind == ZEND_AST_USEDBY || ast->kind == ZEND_AST_METHOD;
 }
 /* }}} */
 
@@ -5956,6 +5956,61 @@ void zend_compile_use_trait(zend_ast *ast) /* {{{ */
 }
 /* }}} */
 
+
+void zend_compile_usedby(zend_ast *ast) /* {{{ */
+{
+	zend_ast_list *classes = zend_ast_get_list(ast->child[0]);
+	zend_class_entry *ce = CG(active_class_entry);
+	zend_op *opline;
+	uint32_t i;
+
+	for (i = 0; i < classes->children; ++i) {
+                znode target_node;
+		zend_ast *class_ast = classes->child[i];
+		zend_string *class_name = zend_ast_get_str(class_ast);
+                zend_class_entry *target_ce = zend_fetch_class(class_name, ZEND_FETCH_CLASS_AUTO);
+                zend_compile_class_ref(&target_node, class_ast, 0);
+               
+                
+		if (ce->ce_flags & ZEND_ACC_INTERFACE) {
+			zend_error_noreturn(E_COMPILE_ERROR, "Cannot use inversed traits inside of interfaces. "
+				"%s is used in %s", ZSTR_VAL(class_name), ZSTR_VAL(ce->name));
+		}
+
+		switch (zend_get_class_fetch_type(class_name)) {
+			case ZEND_FETCH_CLASS_SELF:
+			case ZEND_FETCH_CLASS_PARENT:
+			case ZEND_FETCH_CLASS_STATIC:
+				zend_error_noreturn(E_COMPILE_ERROR, "Cannot use '%s' as class name "
+					"as it is reserved", ZSTR_VAL(class_name));
+				break;
+		}
+
+                
+		/*
+                opline = get_next_op(CG(active_op_array));
+		opline->opcode = ZEND_ADD_TRAIT;
+		SET_NODE(opline->op1, &target_node);
+		opline->op2_type = IS_CONST;
+		opline->op2.constant = zend_add_class_name_literal(CG(active_op_array),
+                        zend_resolve_class_name(ce->name, ZEND_NAME_FQ));
+                */
+                
+		
+                target_ce->traits = (zend_class_entry **) erealloc(target_ce->traits, sizeof(zend_class_entry *) * (target_ce->num_traits +1));
+                target_ce->traits[i] = ce;
+                target_ce->num_traits++;
+                
+                zend_emit_op(NULL, ZEND_BIND_TRAITS, &target_node, NULL);
+                
+                
+               
+	}
+
+}
+/* }}} */
+
+
 void zend_compile_implements(znode *class_node, zend_ast *ast) /* {{{ */
 {
 	zend_ast_list *list = zend_ast_get_list(ast);
@@ -7904,6 +7959,9 @@ void zend_compile_stmt(zend_ast *ast) /* {{{ */
 			break;
 		case ZEND_AST_USE_TRAIT:
 			zend_compile_use_trait(ast);
+			break;
+                case ZEND_AST_USEDBY:
+			zend_compile_usedby(ast);
 			break;
 		case ZEND_AST_CLASS:
 			zend_compile_class_decl(ast);

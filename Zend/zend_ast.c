@@ -859,6 +859,7 @@ static void zend_ast_export_stmt(smart_str *str, zend_ast *ast, int indent)
 			case ZEND_AST_METHOD:
 			case ZEND_AST_CLASS:
 			case ZEND_AST_USE_TRAIT:
+                        case ZEND_AST_USEDBY:
 			case ZEND_AST_NAMESPACE:
 			case ZEND_AST_DECLARE:
 				break;
@@ -1514,6 +1515,12 @@ simple_list:
 			} else {
 				smart_str_appends(str, ";");
 			}
+			break;
+                case ZEND_AST_USEDBY:
+			smart_str_appends(str, "usedby ");
+			zend_ast_export_ex(str, ast->child[0], 0, indent);
+			smart_str_appends(str, ";");
+			
 			break;
 		case ZEND_AST_TRAIT_PRECEDENCE:
 			zend_ast_export_ex(str, ast->child[0], 0, indent);
