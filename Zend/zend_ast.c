@@ -1173,6 +1173,8 @@ simple_list:
 				smart_str_appends(str, "function ");
 			} else if (ast->attr == T_CONST) {
 				smart_str_appends(str, "const ");
+			} else if (ast->attr == T_EXTENSION) {
+				smart_str_appends(str, "extension ");
 			}
 			goto simple_list;
 
@@ -1516,11 +1518,10 @@ simple_list:
 				smart_str_appends(str, ";");
 			}
 			break;
-                case ZEND_AST_USEDBY:
+    case ZEND_AST_USEDBY:
 			smart_str_appends(str, "usedby ");
 			zend_ast_export_ex(str, ast->child[0], 0, indent);
 			smart_str_appends(str, ";");
-			
 			break;
 		case ZEND_AST_TRAIT_PRECEDENCE:
 			zend_ast_export_ex(str, ast->child[0], 0, indent);

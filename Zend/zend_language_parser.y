@@ -189,6 +189,7 @@ static YYSIZE_T zend_yytnamerr(char*, const char*);
 %token T_HALT_COMPILER "__halt_compiler (T_HALT_COMPILER)"
 %token T_CLASS      "class (T_CLASS)"
 %token T_TRAIT      "trait (T_TRAIT)"
+%token T_EXTENSION  "extension (T_EXTENSION)"
 %token T_INTERFACE  "interface (T_INTERFACE)"
 %token T_EXTENDS    "extends (T_EXTENDS)"
 %token T_IMPLEMENTS "implements (T_IMPLEMENTS)"
@@ -273,7 +274,7 @@ reserved_non_modifiers:
 	| T_FOR | T_ENDFOR | T_FOREACH | T_ENDFOREACH | T_DECLARE | T_ENDDECLARE | T_AS | T_TRY | T_CATCH | T_FINALLY
 	| T_THROW | T_USE | T_USEDBY | T_INSTEADOF | T_GLOBAL | T_VAR | T_UNSET | T_ISSET | T_EMPTY | T_CONTINUE | T_GOTO
 	| T_FUNCTION | T_CONST | T_RETURN | T_PRINT | T_YIELD | T_LIST | T_SWITCH | T_ENDSWITCH | T_CASE | T_DEFAULT | T_BREAK
-	| T_ARRAY | T_CALLABLE | T_EXTENDS | T_IMPLEMENTS | T_NAMESPACE | T_TRAIT | T_INTERFACE | T_CLASS
+	| T_ARRAY | T_CALLABLE | T_EXTENDS | T_IMPLEMENTS | T_NAMESPACE | T_TRAIT | T_INTERFACE | T_CLASS | T_EXTENSION
 	| T_CLASS_C | T_TRAIT_C | T_FUNC_C | T_METHOD_C | T_LINE | T_FILE | T_DIR | T_NS_C
 ;
 
@@ -336,6 +337,7 @@ top_statement:
 use_type:
 	 	T_FUNCTION 		{ $$ = ZEND_SYMBOL_FUNCTION; }
 	| 	T_CONST 		{ $$ = ZEND_SYMBOL_CONST; }
+  | 	T_EXTENSION { $$ = ZEND_SYMBOL_EXTENSION; }
 ;
 
 group_use_declaration:
